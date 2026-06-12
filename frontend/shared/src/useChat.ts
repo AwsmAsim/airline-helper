@@ -1,5 +1,5 @@
 import { useState, useCallback, useRef } from 'react';
-import type { Message, SearchResult, AgentStatus, ToolCallState, AirlineId } from './types';
+import type { Message, SearchResult, AgentStatus, ToolCallState, AirlineId, EscalationData, ServiceActionData } from './types';
 
 interface UseChatOptions {
   airline: AirlineId;
@@ -151,6 +151,30 @@ export function useChat({
                         : m
                     )
                   );
+                  break;
+                }
+                case 'escalation': {
+                  // Inject a special escalation message into the chat
+                  const escalationMsg: Message = {
+                    id: `escalation-${Date.now()}`,
+                    role: 'assistant',
+                    content: '',
+                    escalation: data as EscalationData,
+                    timestamp: new Date(),
+                  };
+                  setMessages(prev => [...prev, escalationMsg]);
+                  break;
+                }
+                case 'service_action': {
+                  // Inject a payment card message into the chat
+                  const serviceMsg: Message = {
+                    id: `service-${Date.now()}`,
+                    role: 'assistant',
+                    content: '',
+                    serviceAction: data as ServiceActionData,
+                    timestamp: new Date(),
+                  };
+                  setMessages(prev => [...prev, serviceMsg]);
                   break;
                 }
                 case 'error': {

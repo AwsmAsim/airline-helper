@@ -131,6 +131,28 @@ export interface ErrorEvent {
   message: string;
 }
 
+// ─── Escalation & Service action event payloads ───────────────────────────────
+
+export interface EscalationEvent {
+  type: "ticket" | "callback";
+  ticket_id?: string;       // for tickets
+  category: string;
+  summary: string;
+  eta: string;              // e.g. "2–4 hours"
+  passenger_name: string;
+  flight: string;
+}
+
+export interface ServiceActionEvent {
+  service_type: string;
+  description: string;
+  amount: number;
+  payment_url: string;      // mock URL
+  action_id: string;
+  passenger_name: string;
+  flight: string;
+}
+
 // ─── Agent context ────────────────────────────────────────────────────────────
 
 export interface AgentContext {

@@ -111,10 +111,104 @@ export const TOOLS: Tool[] = [
       },
     },
   },
+  {
+    type: "function",
+    function: {
+      name: "add_service",
+      description:
+        "Use this when the customer wants to add a paid service to their existing booking — " +
+        "such as excess baggage, a pre-booked meal, or a seat upgrade. " +
+        "Only offer this when the airline's documents confirm this service is available. " +
+        "Before calling this tool, confirm the details with the customer (e.g. how many kg, meal preference). " +
+        "Calculate the total amount from the documented rates before calling.",
+      parameters: {
+        type: "object",
+        properties: {
+          service_type: {
+            type: "string",
+            enum: ["excess_baggage", "meal", "seat_upgrade", "zero_cancellation"],
+            description: "The type of service being added.",
+          },
+          details: {
+            type: "object",
+            description: "Service-specific details.",
+            properties: {
+              kg: { type: "number", description: "For excess_baggage: number of kg to add." },
+              meal_type: { type: "string", description: "For meal: e.g. 'Veg', 'Non-Veg', 'Snack'." },
+              seat_preference: { type: "string", description: "For seat_upgrade: e.g. 'Window', 'Aisle', 'Extra Legroom'." },
+            },
+          },
+          amount: {
+            type: "number",
+            description: "Total amount in INR the passenger will be charged. Calculate from documented rates.",
+          },
+          description: {
+            type: "string",
+            description: "Human-readable summary e.g. '5 kg excess baggage' or 'Veg meal pre-booking'.",
+          },
+        },
+        required: ["service_type", "details", "amount", "description"],
+        additionalProperties: false,
+      },
+    },
+  },
+  {
+    type: "function",
+    function: {
+      name: "escalate_issue",
+      description:
+        "Use this when the customer's issue cannot be resolved through information alone and requires " +
+        "human intervention — such as lost/damaged baggage, refund not received, flight disruption without " +
+        "rebooking, medical assistance failures, or staff complaints. " +
+        "Before calling, gather any missing information by asking the customer (e.g. contact number for callback, " +
+        "bag description for lost baggage). Name, PNR, and flight are already known from context — do not ask for those. " +
+        "Choose 'callback' for urgent issues, 'ticket' for non-urgent ones.",
+      parameters: {
+        type: "object",
+        properties: {
+          type: {
+            type: "string",
+            enum: ["ticket", "callback"],
+            description: "'ticket' for non-urgent issues, 'callback' for urgent ones needing immediate human contact.",
+          },
+          category: {
+            type: "string",
+            enum: ["lost_baggage", "damaged_baggage", "refund_delay", "flight_disruption", "staff_complaint", "special_assistance", "other"],
+            description: "Category of the issue.",
+          },
+          summary: {
+            type: "string",
+            description: "Clear one-sentence summary of the issue to include in the ticket/callback request.",
+          },
+          collected_info: {
+            type: "array",
+            description: "Any extra info gathered from the customer beyond what's in their booking context.",
+            items: {
+              type: "object",
+              properties: {
+                key: { type: "string" },
+                value: { type: "string" },
+              },
+              required: ["key", "value"],
+            },
+          },
+          urgency: {
+            type: "string",
+            enum: ["low", "medium", "high"],
+            description: "Urgency level — affects callback ETA shown to customer.",
+          },
+        },
+        required: ["type", "category", "summary", "collected_info", "urgency"],
+        additionalProperties: false,
+      },
+    },
+  },
 ];
 
 export type ToolName =
   | "search_airline_docs"
   | "flight_schedule_lookup"
   | "aviation_knowledge"
-  | "resolve_customer_issue";
+  | "resolve_customer_issue"
+  | "add_service"
+  | "escalate_issue";

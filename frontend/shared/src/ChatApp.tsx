@@ -2,11 +2,13 @@ import React, { useEffect, useRef, useState } from 'react';
 import { Header } from './components/Header';
 import { PassengerStrip } from './components/PassengerStrip';
 import { MessageBubble } from './components/MessageBubble';
+import { EscalationCard } from './components/EscalationCard';
+import { PaymentCard } from './components/PaymentCard';
 import { ThinkingIndicator } from './components/ThinkingIndicator';
 import { SuggestedQuestions } from './components/SuggestedQuestions';
 import { ChatInput } from './components/ChatInput';
 import { useChat } from './useChat';
-import type { AirlineConfig } from './types';
+import type { AirlineConfig, Message } from './types';
 import { PlaneTakeoff, Shield, Clock, Phone } from 'lucide-react';
 
 interface Props {
@@ -23,6 +25,17 @@ export function ChatApp({ config }: Props) {
 
   const bottomRef = useRef<HTMLDivElement>(null);
   const [showSuggestions, setShowSuggestions] = useState(true);
+
+  // Render any message type — normal bubble, escalation card, or payment card
+  const renderMessage = (msg: Message) => {
+    if (msg.escalation) {
+      return <EscalationCard key={msg.id} data={msg.escalation} config={config} />;
+    }
+    if (msg.serviceAction) {
+      return <PaymentCard key={msg.id} data={msg.serviceAction} config={config} />;
+    }
+    return <MessageBubble key={msg.id} message={msg} config={config} />;
+  };
 
   useEffect(() => {
     bottomRef.current?.scrollIntoView({ behavior: 'smooth' });
@@ -49,9 +62,7 @@ export function ChatApp({ config }: Props) {
           {messages.length === 0 ? (
             <WelcomeScreen config={config} />
           ) : (
-            messages.map(msg => (
-              <MessageBubble key={msg.id} message={msg} config={config} />
-            ))
+            messages.map(msg => renderMessage(msg))
           )}
           <ThinkingIndicator status={status} toolCall={currentToolCall} config={config} />
           <div ref={bottomRef} />
@@ -168,9 +179,7 @@ export function ChatApp({ config }: Props) {
               <DesktopWelcome config={config} onSelect={handleSuggestedQuestion} showSuggestions={showSuggestions} />
             ) : (
               <>
-                {messages.map(msg => (
-                  <MessageBubble key={msg.id} message={msg} config={config} />
-                ))}
+                {messages.map(msg => renderMessage(msg))}
                 <ThinkingIndicator status={status} toolCall={currentToolCall} config={config} />
                 <div ref={bottomRef} />
               </>

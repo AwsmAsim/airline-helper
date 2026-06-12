@@ -27,11 +27,35 @@ export interface PassengerInfo {
   class: string;
 }
 
+// Escalation payload from backend
+export interface EscalationData {
+  type: 'ticket' | 'callback';
+  ticket_id?: string;
+  category: string;
+  summary: string;
+  eta: string;
+  passenger_name: string;
+  flight: string;
+}
+
+// Service/payment action payload from backend
+export interface ServiceActionData {
+  service_type: string;
+  description: string;
+  amount: number;
+  payment_url: string;
+  action_id: string;
+  passenger_name: string;
+  flight: string;
+}
+
 export interface Message {
   id: string;
   role: 'user' | 'assistant';
   content: string;
   sources?: SearchResult[];
+  escalation?: EscalationData;
+  serviceAction?: ServiceActionData;
   timestamp: Date;
 }
 

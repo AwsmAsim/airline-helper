@@ -14,6 +14,36 @@ import { buildSystemPrompt } from "./prompt";
 import { searchAirline } from "../search/bm25";
 import { lookupSchedule, listRoutes, FlightRow } from "../search/schedule";
 import { AIRLINE_CONFIGS, OPENROUTER_API_URL, MODEL, MAX_AGENT_LOOPS } from "../config";
+import { EscalationEvent, ServiceActionEvent } from "../types";
+
+// ── Mock helpers ──────────────────────────────────────────────────────────────
+
+function randomId(prefix: string, digits = 5): string {
+  return `${prefix}-${Math.floor(10000 + Math.random() * 90000)}`;
+}
+
+const CATEGORY_LABELS: Record<string, string> = {
+  lost_baggage: "Lost Baggage",
+  damaged_baggage: "Damaged Baggage",
+  refund_delay: "Refund Delay",
+  flight_disruption: "Flight Disruption",
+  staff_complaint: "Staff Complaint",
+  special_assistance: "Special Assistance",
+  other: "General Issue",
+};
+
+const URGENCY_ETA: Record<string, string> = {
+  high: "Within 1 hour",
+  medium: "2–4 hours",
+  low: "Within 24 hours",
+};
+
+const SERVICE_LABELS: Record<string, string> = {
+  excess_baggage: "Excess Baggage",
+  meal: "Meal Pre-booking",
+  seat_upgrade: "Seat Upgrade",
+  zero_cancellation: "Zero Cancellation",
+};
 
 // ── SSE helper ────────────────────────────────────────────────────────────────
 
@@ -29,12 +59,19 @@ interface ResolveArgs {
   steps: string[];
 }
 
+interface PassengerContext {
+  name: string;
+  flight: string;
+  pnr: string;
+}
+
 function executeTool(
   name: ToolName,
   rawArgs: string,
   airlineId: AirlineId,
   ctx: AgentContext,
-  reply: FastifyReply
+  reply: FastifyReply,
+  passenger: PassengerContext
 ): string {
   const args = JSON.parse(rawArgs) as Record<string, unknown>;
 
@@ -121,6 +158,75 @@ function executeTool(
       const { issue, context, steps } = args as unknown as ResolveArgs;
       const numbered = steps.map((s, i) => `${i + 1}. ${s}`).join("\n");
       result = `Issue: ${issue}\n\nContext: ${context}\n\nResolution Steps:\n${numbered}`;
+      break;
+    }
+
+    case "add_service": {
+      const { service_type, details, amount, description } = args as {
+        service_type: string;
+        details: Record<string, unknown>;
+        amount: number;
+        description: string;
+      };
+
+      const actionId = randomId("SVC");
+      const payload: ServiceActionEvent = {
+        service_type,
+        description,
+        amount,
+        payment_url: `https://pay.mock/${airlineId}/${actionId}`,
+        action_id: actionId,
+        passenger_name: passenger.name,
+        flight: passenger.flight,
+      };
+
+      // Emit a dedicated SSE event the frontend will render as a PaymentCard
+      sendSSE(reply, "service_action", payload);
+
+      result =
+        `Service add-on initiated: ${SERVICE_LABELS[service_type] ?? service_type} — ₹${amount}. ` +
+        `Action ID: ${actionId}. ` +
+        `A payment card has been shown to the passenger. ` +
+        `Tell the passenger to complete payment using the card shown below and their ${description} will be confirmed.`;
+      break;
+    }
+
+    case "escalate_issue": {
+      const { type, category, summary, collected_info, urgency } = args as {
+        type: "ticket" | "callback";
+        category: string;
+        summary: string;
+        collected_info: Array<{ key: string; value: string }>;
+        urgency: string;
+      };
+
+      const eta = URGENCY_ETA[urgency] ?? "2–4 hours";
+      const payload: EscalationEvent = {
+        type,
+        ticket_id: type === "ticket" ? randomId("TKT") : undefined,
+        category: CATEGORY_LABELS[category] ?? category,
+        summary,
+        eta,
+        passenger_name: passenger.name,
+        flight: passenger.flight,
+      };
+
+      // Emit a dedicated SSE event the frontend will render as an EscalationCard
+      sendSSE(reply, "escalation", payload);
+
+      if (type === "ticket") {
+        result =
+          `Ticket ${payload.ticket_id} has been opened for: "${summary}". ` +
+          `Category: ${payload.category}. ETA for response: ${eta}. ` +
+          `An escalation card has been shown to the passenger. ` +
+          `Tell the passenger their ticket has been raised and they will hear back within ${eta}.`;
+      } else {
+        result =
+          `Callback request raised for: "${summary}". ` +
+          `Category: ${payload.category}. ETA: ${eta}. ` +
+          `An escalation card has been shown to the passenger. ` +
+          `Tell the passenger a support agent will call them within ${eta}.`;
+      }
       break;
     }
 
@@ -275,6 +381,15 @@ export async function runAgentLoop(
     accumulatedSources: [],
   };
 
+  // Extract passenger context from the enriched message prefix
+  // Format: "[Passenger: NAME, Flight: FLIGHT ORIG→DEST DATE]\n\n..."
+  const passengerMatch = userMessage.match(/\[Passenger:\s*([^,]+),\s*Flight:\s*([^\]]+)\]/);
+  const passenger: PassengerContext = {
+    name: passengerMatch?.[1]?.trim() ?? "Passenger",
+    flight: passengerMatch?.[2]?.trim() ?? "Unknown flight",
+    pnr: "",
+  };
+
   // Keep only the last 10 conversation turns to avoid token overflow
   const recentHistory = conversationHistory.slice(-10);
 
@@ -328,7 +443,8 @@ export async function runAgentLoop(
           tc.function.arguments,
           airlineId,
           ctx,
-          reply
+          reply,
+          passenger
         );
       } catch (err) {
         resultContent = err instanceof Error
