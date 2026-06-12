@@ -9,4 +9,13 @@ export default defineConfig({
       '@airline-helper/shared': path.resolve(__dirname, '../shared/src'),
     },
   },
+  build: {
+    rollupOptions: {
+      output: {
+        entryFileNames: 'assets/starair-[hash].js',
+        chunkFileNames: 'assets/starair-[hash].js',
+        assetFileNames: 'assets/starair-[hash].[ext]',
+      },
+    },
+  },
 });

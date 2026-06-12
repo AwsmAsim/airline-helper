@@ -9,4 +9,13 @@ export default defineConfig({
       '@airline-helper/shared': path.resolve(__dirname, '../shared/src'),
     },
   },
+  build: {
+    rollupOptions: {
+      output: {
+        entryFileNames: 'assets/spicejet-[hash].js',
+        chunkFileNames: 'assets/spicejet-[hash].js',
+        assetFileNames: 'assets/spicejet-[hash].[ext]',
+      },
+    },
+  },
 });
