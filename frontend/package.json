@@ -1,0 +1,5 @@
+{
+  "name": "airline-helper-frontend",
+  "private": true,
+  "workspaces": ["shared", "fly91", "starair", "spicejet", "allianceair"]
+}

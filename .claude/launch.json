@@ -1,0 +1,33 @@
+{
+  "version": "0.0.1",
+  "configurations": [
+    {
+      "name": "fly91",
+      "runtimeExecutable": "npm",
+      "runtimeArgs": ["run", "dev", "--", "--port", "5173"],
+      "cwd": "/Users/apple/projects/airline-helper/frontend/fly91",
+      "port": 5173
+    },
+    {
+      "name": "starair",
+      "runtimeExecutable": "npm",
+      "runtimeArgs": ["run", "dev", "--", "--port", "5174"],
+      "cwd": "/Users/apple/projects/airline-helper/frontend/starair",
+      "port": 5174
+    },
+    {
+      "name": "spicejet",
+      "runtimeExecutable": "npm",
+      "runtimeArgs": ["run", "dev", "--", "--port", "5175"],
+      "cwd": "/Users/apple/projects/airline-helper/frontend/spicejet",
+      "port": 5175
+    },
+    {
+      "name": "allianceair",
+      "runtimeExecutable": "npm",
+      "runtimeArgs": ["run", "dev", "--", "--port", "5176"],
+      "cwd": "/Users/apple/projects/airline-helper/frontend/allianceair",
+      "port": 5176
+    }
+  ]
+}
