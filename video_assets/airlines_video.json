@@ -1,0 +1,74 @@
+{
+  "starair": {
+    "name": "Star Air",
+    "primary": "#003087",
+    "primaryDark": "#001F5C",
+    "accent": "#FFD700",
+    "barColor": "0x001F5C",
+    "tagline": "Fly Punctual",
+    "url": "starair-support.netlify.app",
+    "logo": "starair_logo.png",
+    "scene2_kind": "payment",
+    "captions": [
+      "Customers ask like they'd text a friend —\\Nanswers come from real Star Air policies.",
+      "Pre-book a meal & pay right inside the chat.\\NNo call centre. No queue.",
+      "Flight delayed? It books a priority callback\\Nautomatically — no waiting on hold."
+    ],
+    "vo": {
+      "vo0": "Most airline support questions never actually need a human. So Star Air can handle them, instantly.",
+      "vo1": "Customers just ask, the way they'd text a friend. And it answers from Star Air's real policies.",
+      "vo3": "Want a meal pre-booked? It's added and paid for right inside the chat. No call centre, no queue.",
+      "vo4": "And when a flight is delayed, it books a priority callback automatically, so no one waits on hold.",
+      "vo5": "Twenty-four seven answers. Up to eighty percent of routine queries handled on their own. Your team only sees what truly matters.",
+      "vo6": "Star Air AI support. Try it today."
+    }
+  },
+  "spicejet": {
+    "name": "SpiceJet",
+    "primary": "#ED1B23",
+    "primaryDark": "#B01018",
+    "accent": "#FAD903",
+    "barColor": "0x7A0A10",
+    "tagline": "Red. Hot. Deals.",
+    "url": "spicejet-assist.netlify.app",
+    "logo": "spicejet_logo.png",
+    "scene2_kind": "payment",
+    "captions": [
+      "Customers ask like they'd text a friend —\\Nanswers come from real SpiceJet policies.",
+      "Add SpiceMax & pay right inside the chat.\\NNo call centre. No queue.",
+      "Refund stuck? It raises a ticket\\N& tracks it for you — automatically."
+    ],
+    "vo": {
+      "vo0": "Most airline support questions never actually need a human. So SpiceJet can handle them, instantly.",
+      "vo1": "Customers just ask, the way they'd text a friend. And it answers from SpiceJet's real policies.",
+      "vo3": "Want SpiceMax priority? It's added and paid for right inside the chat. No call centre, no queue.",
+      "vo4": "And when a refund is stuck, it raises a ticket and tracks it automatically.",
+      "vo5": "Twenty-four seven answers. Up to eighty percent of routine queries handled on their own. Your team only sees what truly matters.",
+      "vo6": "SpiceJet AI support. Try it today."
+    }
+  },
+  "allianceair": {
+    "name": "Alliance Air",
+    "primary": "#1A3C6E",
+    "primaryDark": "#0F2549",
+    "accent": "#FFD700",
+    "barColor": "0x0F2549",
+    "tagline": "Connecting India",
+    "url": "allianceair-support.netlify.app",
+    "logo": "allianceair_logo.png",
+    "scene2_kind": "escalation",
+    "captions": [
+      "Customers ask like they'd text a friend —\\Nanswers come from real Alliance Air policies.",
+      "Flight cancelled? It books a priority callback\\Nautomatically — no waiting on hold.",
+      "Missed assistance? It escalates with a ticket\\N& follows up — so nothing slips through."
+    ],
+    "vo": {
+      "vo0": "Most airline support questions never actually need a human. So Alliance Air can handle them, instantly.",
+      "vo1": "Customers just ask, the way they'd text a friend. And it answers from Alliance Air's real policies.",
+      "vo3": "When a flight is cancelled, it books a priority callback automatically, so no one waits on hold.",
+      "vo4": "And if assistance was missed, it escalates with a ticket and follows up, so nothing slips through.",
+      "vo5": "Twenty-four seven answers. Up to eighty percent of routine queries handled on their own. Your team only sees what truly matters.",
+      "vo6": "Alliance Air AI support. Try it today."
+    }
+  }
+}
