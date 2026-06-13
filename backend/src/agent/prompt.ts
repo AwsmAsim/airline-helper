@@ -1,5 +1,29 @@
 import { AirlineConfig } from "../types";
 
+function buildAddOnSection(config: AirlineConfig): string {
+  if (config.addOns.length === 0) {
+    return `### ADD-ON SERVICES
+${config.name} does NOT have any self-serve paid add-ons with documented pricing in your knowledge base.
+- NEVER quote a price for excess baggage, meals, seat upgrades, or any add-on — you do not have ${config.name}'s rates.
+- NEVER call \`add_service\`. There is no payment flow for this airline.
+- If the customer wants to add baggage, a meal, or a seat, explain it must be done via Manage Booking on the ${config.name} website/app, and offer to help them with the steps or escalate to ${config.name} support if they're stuck.`;
+  }
+
+  const lines = config.addOns
+    .map((a) => `   - **${a.label}** (\`${a.service_type}\`): ${a.priceText}`)
+    .join("\n");
+
+  return `### ADD-ON SERVICES (payment flow)
+${config.name} offers these DOCUMENTED paid add-ons — these are the ONLY services you may sell:
+${lines}
+
+Rules:
+1. ONLY offer a service from the list above. If a customer asks for something NOT listed (e.g. excess baggage when it isn't listed), do NOT invent a price — explain it's handled via Manage Booking instead, or escalate.
+2. If the customer already gave the detail needed (kg, meal type, etc.), treat it as confirmed intent — call \`add_service\` immediately. Otherwise ask ONE short clarifying question.
+3. Use ONLY the documented price above. For per-unit pricing, compute from the documented rate. NEVER guess or borrow another airline's prices.
+4. Once the amount is known, call \`add_service\` — a payment card appears automatically. Tell the customer to complete payment there.`;
+}
+
 export function buildSystemPrompt(config: AirlineConfig): string {
   return `${config.personality}
 
@@ -36,14 +60,7 @@ Use \`search_airline_docs\` to find the answer. Cite the source naturally in you
 ### POLICY questions ("What's the refund policy?", "What are the baggage rules?")
 Use \`search_airline_docs\`. Quote key policy points and always include the source URL.
 
-### ADD-ON SERVICES ("I want to add baggage", "I have X kg extra", "how do I add luggage", "Can I pre-book a meal?", "I want to upgrade my seat")
-Only offer this if the airline's documents confirm the service is available and you know the price.
-1. If the customer already stated how many kg they want (e.g. "I have 8-9 kg extra", "I need 10 kg more"), treat this as confirmed purchase intent — do NOT ask again. Pick the best matching slab and call \`add_service\` immediately.
-2. If the quantity is unclear, ask ONE short question: "How many kg would you like to add?"
-3. Once quantity is known, call \`add_service\` with the calculated amount — a payment card will appear automatically
-4. For Fly91 excess baggage slabs (pre-booked): +5 kg = ₹1,000 | +10 kg = ₹2,000 | +20 kg = ₹2,500 | +30 kg = ₹3,000. Pick the slab that covers what the customer needs.
-5. Do NOT invent pricing for other airlines unless it's clearly stated in the documents
-6. IMPORTANT: Any message where the customer mentions having extra kg or wanting to add luggage/baggage is an ADD-ON SERVICE request — not just an information question. Always end with the \`add_service\` tool call.
+${buildAddOnSection(config)}
 
 ### ISSUE reports ("My bag is lost", "My flight was cancelled", "I haven't received my refund")
 1. First use \`search_airline_docs\` to find the relevant procedure

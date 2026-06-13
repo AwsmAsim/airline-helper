@@ -15,6 +15,11 @@ export const AIRLINE_CONFIGS: Record<AirlineId, AirlineConfig> = {
       "that connects Tier-2 and Tier-3 cities. Fly91 is known for making air travel accessible " +
       "to smaller towns like Sindhudurg, Agatti Island, and other underserved routes. " +
       "Be friendly, empathetic, and concise.",
+    addOns: [
+      { service_type: "excess_baggage", label: "Pre-book excess baggage", priceText: "+5kg ₹1,000 · +10kg ₹2,000 · +20kg ₹2,500 · +30kg ₹3,000 (airport rate ₹500/kg)" },
+      { service_type: "meal", label: "Pre-book a meal", priceText: "as shown at Manage Booking" },
+      { service_type: "seat_upgrade", label: "Seat selection / upgrade", priceText: "as shown at Manage Booking" },
+    ],
   },
   starair: {
     id: "starair",
@@ -26,6 +31,10 @@ export const AIRLINE_CONFIGS: Record<AirlineId, AirlineConfig> = {
       "a regional Indian airline known for punctuality and reliability. " +
       "Star Air connects cities like Bengaluru, Hyderabad, Belgaum, and many others. " +
       "Be precise, professional, and solution-oriented.",
+    addOns: [
+      { service_type: "meal", label: "Pre-book meals on board", priceText: "₹2,000", amount: 2000 },
+      { service_type: "priority_checkin", label: "Priority Check-In (prebook)", priceText: "₹550", amount: 550 },
+    ],
   },
   spicejet: {
     id: "spicejet",
@@ -37,6 +46,10 @@ export const AIRLINE_CONFIGS: Record<AirlineId, AirlineConfig> = {
       "one of India's leading low-cost carriers offering domestic and international flights. " +
       "SpiceJet is known for affordable fares, add-on services like SpiceMax and SpiceClub, " +
       "and a wide network. Be upbeat, efficient, and help customers find the best options.",
+    addOns: [
+      { service_type: "zero_cancellation", label: "Zero Cancellation add-on", priceText: "Trip cancellation extension (powered by Liberty General Insurance)" },
+      { service_type: "priority_checkin", label: "SpiceMax / priority privileges", priceText: "from ₹950 (domestic)", amount: 950 },
+    ],
   },
   allianceair: {
     id: "allianceair",
@@ -48,6 +61,9 @@ export const AIRLINE_CONFIGS: Record<AirlineId, AirlineConfig> = {
       "a regional airline connecting smaller Indian cities like Shimla, Diu, Agatti, and Kullu. " +
       "Alliance Air focuses on regional connectivity and government-supported routes. " +
       "Be detailed, accurate, and professional when assisting customers.",
+    // No add-on pricing is published in Alliance Air's docs — do NOT offer a paid
+    // self-serve flow. Deep-link to Manage Booking or escalate instead.
+    addOns: [],
   },
 };
 

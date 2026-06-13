@@ -29,6 +29,23 @@ export interface AirlineConfig {
   dataPath: string;
   color: string;
   personality: string;
+  /**
+   * Paid add-on services that are DOCUMENTED for this airline (with a real,
+   * sourced price). The agent may only offer a `add_service` payment flow for
+   * services listed here. If empty, the airline has no self-serve paid add-ons
+   * and the agent must NOT invent any — it should deep-link to Manage Booking
+   * or escalate instead.
+   */
+  addOns: AddOnSpec[];
+}
+
+export interface AddOnSpec {
+  service_type: "excess_baggage" | "meal" | "seat_upgrade" | "zero_cancellation" | "priority_checkin";
+  label: string;
+  /** Human-readable documented price, e.g. "₹500 per kg" or "₹2,000". */
+  priceText: string;
+  /** Fixed amount in INR when known; for per-unit pricing leave undefined and let the agent compute. */
+  amount?: number;
 }
 
 // ─── HTTP request body ────────────────────────────────────────────────────────
