@@ -28,6 +28,13 @@
       "runtimeArgs": ["run", "dev", "--", "--port", "5176"],
       "cwd": "/Users/apple/projects/airline-helper/frontend/allianceair",
       "port": 5176
+    },
+    {
+      "name": "dashboard",
+      "runtimeExecutable": "npm",
+      "runtimeArgs": ["run", "dev", "--", "--port", "5178"],
+      "cwd": "/Users/apple/projects/airline-helper/frontend/dashboard",
+      "port": 5178
     }
   ]
 }

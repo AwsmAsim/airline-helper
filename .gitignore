@@ -6,3 +6,8 @@ dist/
 
 # Local Netlify folder
 .netlify
+
+# SQLite logs (local only — Railway uses a volume)
+logs.db
+logs.db-shm
+logs.db-wal

@@ -15,6 +15,7 @@ import { searchAirline } from "../search/bm25";
 import { lookupSchedule, listRoutes, FlightRow } from "../search/schedule";
 import { AIRLINE_CONFIGS, OPENROUTER_API_URL, MODEL, MAX_AGENT_LOOPS } from "../config";
 import { EscalationEvent, ServiceActionEvent } from "../types";
+import { insertLog } from "../db";
 
 // ── Mock helpers ──────────────────────────────────────────────────────────────
 
@@ -256,7 +257,7 @@ async function streamFromOpenRouter(
   tools: Tool[],
   apiKey: string,
   reply: FastifyReply
-): Promise<{ toolCalls: ToolCall[]; finishReason: string }> {
+): Promise<{ toolCalls: ToolCall[]; finishReason: string; textAccumulated: string }> {
   const response = await fetch(OPENROUTER_API_URL, {
     method: "POST",
     headers: {
@@ -291,6 +292,7 @@ async function streamFromOpenRouter(
   const toolCallMap = new Map<number, AccumulatedToolCall>();
   let finishReason = "stop";
   let buffer = "";
+  let textAccumulated = "";
 
   while (true) {
     const { done, value } = await reader.read();
@@ -329,6 +331,7 @@ async function streamFromOpenRouter(
       // Stream text tokens directly to the client
       if (delta.content) {
         sendSSE(reply, "text", delta.content);
+        textAccumulated += delta.content;
       }
 
       // Accumulate tool call fragments
@@ -355,7 +358,7 @@ async function streamFromOpenRouter(
       function: { name: acc.name, arguments: acc.arguments },
     }));
 
-  return { toolCalls, finishReason };
+  return { toolCalls, finishReason, textAccumulated };
 }
 
 // ── Main agentic loop ─────────────────────────────────────────────────────────
@@ -401,15 +404,19 @@ export async function runAgentLoop(
   ];
 
   let loops = 0;
+  const startTime = Date.now();
+  const toolsUsed: string[] = [];
+  let fullAssistantResponse = "";
 
   while (loops < MAX_AGENT_LOOPS) {
     loops++;
 
     let toolCalls: ToolCall[];
     let finishReason: string;
+    let textAccumulated: string;
 
     try {
-      ({ toolCalls, finishReason } = await streamFromOpenRouter(
+      ({ toolCalls, finishReason, textAccumulated } = await streamFromOpenRouter(
         messages,
         TOOLS,
         apiKey,
@@ -420,6 +427,10 @@ export async function runAgentLoop(
       sendSSE(reply, "error", { message: msg });
       reply.raw.end();
       return;
+    }
+
+    if (textAccumulated) {
+      fullAssistantResponse += textAccumulated;
     }
 
     // No tool calls or natural stop → agent is done
@@ -436,10 +447,13 @@ export async function runAgentLoop(
 
     // Execute each tool and append its result
     for (const tc of toolCalls) {
+      const toolName = tc.function.name;
+      if (!toolsUsed.includes(toolName)) toolsUsed.push(toolName);
+
       let resultContent: string;
       try {
         resultContent = executeTool(
-          tc.function.name as ToolName,
+          toolName as ToolName,
           tc.function.arguments,
           airlineId,
           ctx,
@@ -460,6 +474,24 @@ export async function runAgentLoop(
     }
 
     // Loop back — Claude will process tool results and either respond or call more tools
+  }
+
+  // Fire-and-forget log — wrapped so any failure is silent
+  try {
+    insertLog({
+      airline: airlineId,
+      sessionId,
+      userMessage,
+      assistantResponse: fullAssistantResponse,
+      toolsUsed,
+      agentLoops: loops,
+      durationMs: Date.now() - startTime,
+      model: MODEL,
+      passengerName: passenger.name !== "Passenger" ? passenger.name : undefined,
+      passengerFlight: passenger.flight !== "Unknown flight" ? passenger.flight : undefined,
+    });
+  } catch {
+    // Logging must never surface to the user
   }
 
   // Stream complete — send done event with all accumulated source URLs

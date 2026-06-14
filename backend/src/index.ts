@@ -7,6 +7,7 @@ import { loadSchedules } from "./search/schedule";
 import { runAgentLoop } from "./agent/loop";
 import { AIRLINE_CONFIGS, MODEL } from "./config";
 import { ChatRequestBody, AirlineId } from "./types";
+import { queryLogs, queryStats } from "./db";
 
 dotenv.config();
 
@@ -61,6 +62,36 @@ async function bootstrap(): Promise<void> {
       color: c.color,
     })),
   }));
+
+  // ── GET /api/logs ───────────────────────────────────────────────────────────
+
+  server.get("/api/logs", async (request, reply) => {
+    const token = process.env.DASHBOARD_TOKEN;
+    if (token) {
+      const auth = (request.headers.authorization ?? "").replace("Bearer ", "");
+      if (auth !== token) return reply.status(401).send({ error: "Unauthorized" });
+    }
+    const q = request.query as Record<string, string>;
+    const logs = queryLogs({
+      airline: q.airline,
+      from: q.from,
+      to: q.to,
+      limit: q.limit ? parseInt(q.limit, 10) : 100,
+      offset: q.offset ? parseInt(q.offset, 10) : 0,
+    });
+    return logs;
+  });
+
+  // ── GET /api/logs/stats ─────────────────────────────────────────────────────
+
+  server.get("/api/logs/stats", async (request, reply) => {
+    const token = process.env.DASHBOARD_TOKEN;
+    if (token) {
+      const auth = (request.headers.authorization ?? "").replace("Bearer ", "");
+      if (auth !== token) return reply.status(401).send({ error: "Unauthorized" });
+    }
+    return queryStats();
+  });
 
   // ── POST /chat ──────────────────────────────────────────────────────────────
 
