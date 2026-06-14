@@ -1,0 +1,9 @@
+node_modules/
+frontend/
+video_assets/
+*.mp4
+*.pdf
+logs.db
+logs.db-shm
+logs.db-wal
+backend/dist/
